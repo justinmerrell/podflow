@@ -21,6 +21,56 @@ var starterTemplates embed.FS
 //go:embed example.toml
 var tomlTemplate embed.FS
 
+const baseBashScript = `#!/bin/bash
+# Check for required packages and install them if they are not present
+for pkg in openssh-server rsync zstd; do
+    if ! dpkg -l | grep -qw $pkg; then
+        echo "Package $pkg is not installed. Installing..."
+        apt-get update
+        apt-get install -y $pkg
+    else
+        echo "Package $pkg is already installed."
+    fi
+done
+
+if [[ -z "${RUNPOD_PROJECT_ID}" ]]; then
+    echo "RUNPOD_PROJECT_ID environment variable is not set. Exiting."
+    exit 0
+fi
+
+check_interval=60
+countdown_time=${POD_INACTIVITY_TIMEOUT:-300}
+
+# Function to monitor the number of active SSH connections
+monitor_ssh() {
+    echo "Monitoring SSH connections every $check_interval seconds, with a countdown of $countdown_time seconds."
+    countdown=$countdown_time
+
+    while true; do
+        sleep $check_interval
+
+        connections=$(ss -tn | grep ':22' | grep -v 'LISTEN' | wc -l)
+
+        if [[ "$connections" -eq 0 ]]; then
+            ((countdown-=$check_interval))
+            echo "No SSH connections found. Countdown: $countdown seconds remaining."
+
+            if [[ "$countdown" -le 0 ]]; then
+                echo "Countdown reached zero. Removing pod: $RUNPOD_POD_ID"
+                runpodctl remove pod $RUNPOD_POD_ID
+                exit 0
+            fi
+        else
+            if [[ "$countdown" -ne $countdown_time ]]; then
+                echo "SSH connection detected. Countdown aborted."
+            fi
+            countdown=$countdown_time
+        fi
+    done
+}
+
+monitor_ssh &`
+
 const basePath string = "starter_templates"
 
 func baseDockerImage(cudaVersion string) string {
@@ -139,7 +189,7 @@ func attemptPodLaunch(config *toml.Tree, environmentVariables map[string]string,
 			CloudType:         "ALL",
 			ContainerDiskInGb: int(projectConfig.Get("container_disk_size_gb").(int64)),
 			// DeployCost:      projectConfig.Get(""),
-			DockerArgs:      "",
+			DockerArgs:      baseBashScript,
 			Env:             podEnv,
 			GpuCount:        int(projectConfig.Get("gpu_count").(int64)),
 			GpuTypeId:       gpuType,
@@ -250,9 +300,9 @@ func startProject() error {
 	fmt.Printf("Activating Python virtual environment: %s on pod %s\n", venvPath, projectPodId)
 	sshConn.RunCommands([]string{
 		fmt.Sprintf("python%s -m venv %s", config.GetPath([]string{"runtime", "python_version"}).(string), venvPath),
-		fmt.Sprintf(`source %s/bin/activate && 
-		cd %s && 
-		python -m pip install --upgrade pip && 
+		fmt.Sprintf(`source %s/bin/activate &&
+		cd %s &&
+		python -m pip install --upgrade pip &&
 		python -m pip install -v --requirement %s`,
 			venvPath, remoteProjectPath, config.GetPath([]string{"runtime", "requirements_path"}).(string)),
 	})
@@ -393,9 +443,9 @@ func deployProject() (endpointId string, err error) {
 	fmt.Printf("Activating Python virtual environment: %s on pod %s\n", venvPath, projectPodId)
 	sshConn.RunCommands([]string{
 		fmt.Sprintf("python%s -m venv %s", config.GetPath([]string{"runtime", "python_version"}).(string), venvPath),
-		fmt.Sprintf(`source %s/bin/activate && 
-		cd %s && 
-		python -m pip install --upgrade pip && 
+		fmt.Sprintf(`source %s/bin/activate &&
+		cd %s &&
+		python -m pip install --upgrade pip &&
 		python -m pip install -v --requirement %s`,
 			venvPath, remoteProjectPath, config.GetPath([]string{"runtime", "requirements_path"}).(string)),
 	})
