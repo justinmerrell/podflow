@@ -7,9 +7,9 @@ import (
 )
 
 var projectCmd = &cobra.Command{
-	Use:   "project [command]",
-	Short: "Manage RunPod projects",
-	Long:  "Develop and deploy projects entirely on RunPod's infrastructure.",
+	Use:   "airfoil [command]",
+	Short: "Dockerless solution to Develop and deploy serverless endpoints",
+	Long:  "Dockerless solution to develop and deploy serverless projects entirely on RunPod's infrastructure.",
 }
 
 func init() {

@@ -58,12 +58,64 @@ func registerCommands() {
 	rootCmd.SetVersionTemplate(`{{printf "runpodctl %s\n" .Version}}`)
 }
 
+func customHelpFunc(cmd *cobra.Command, args []string) {
+	var controlCmds, utilityCmds []*cobra.Command
+
+	for _, c := range cmd.Commands() {
+		if !c.IsAvailableCommand() || c.IsAdditionalHelpTopicCommand() {
+			continue
+		}
+
+		// Manually categorize commands
+		switch c.Name() {
+		// Add your command names here based on the category
+		case "create", "get", "start", "stop", "update", "ssh":
+			controlCmds = append(controlCmds, c)
+		case "remove", "airfoil", "exec", "receive", "send":
+			utilityCmds = append(utilityCmds, c)
+		default:
+			// Optionally handle default case
+		}
+	}
+
+	// Print the default usage
+	cmd.Print("CLI tool to manage your pods for runpod.io\n\n")
+	cmd.Println("Usage:")
+	cmd.Print("  runpodctl [command]\n\n")
+	cmd.Println("Aliases:")
+	cmd.Print("  runpodctl, runpod\n\n")
+
+	// Print Control Commands
+	if len(controlCmds) > 0 {
+		cmd.Println("Control/Manage Commands:")
+		for _, c := range controlCmds {
+			cmd.Printf("  %-15s %s\n", c.Name(), c.Short)
+		}
+		cmd.Println()
+	}
+
+	// Print Develop Commands
+	if len(utilityCmds) > 0 {
+		cmd.Println("Utility/Develop Commands:")
+		for _, c := range utilityCmds {
+			cmd.Printf("  %-15s %s\n", c.Name(), c.Short)
+		}
+		cmd.Println()
+	}
+
+	// Print global flags
+	cmd.Println("Flags:")
+	cmd.Println("  -h, --help   help for runpodctl\n")
+	cmd.Println(`Use "runpodctl [command] --help" for more information about a command.`)
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute(ver string) {
 	version = ver
 	api.Version = ver
 	rootCmd.Version = ver
+	rootCmd.SetHelpFunc(customHelpFunc)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
