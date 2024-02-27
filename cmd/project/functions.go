@@ -328,6 +328,17 @@ func startProject(networkVolumeId string) error {
 				fi
 			fi
 
+			# Specifically check for uv using which command
+			if ! command -v uv &> /dev/null; then
+				echo "uv could not be found, attempting to install uv..."
+				if pip install uv; then
+					echo "uv installed successfully."
+				else
+					echo "Failed to install uv."
+					exit 1
+				fi
+			fi
+
 			wget -qO- cli.runpod.net | sudo bash &> /dev/null
 		}
 		check_and_install_dependencies`),
@@ -340,13 +351,16 @@ func startProject(networkVolumeId string) error {
 				mkdir -p %s && tar -xf %s -C %s
 			else
 				echo "Creating new venv..."
-				python%s -m virtualenv %s
+				uv venv --python=%s %s
 			fi
 		fi`, venvPath, archivedVenvPath, venvPath, archivedVenvPath, venvPath, config.GetPath([]string{"runtime", "python_version"}).(string), venvPath),
 		fmt.Sprintf(`source %s/bin/activate &&
 		cd %s &&
-		python -m pip install --upgrade pip &&
-		python -m pip install -v --requirement %s --report /installreport.json`,
+		uv pip install -v --requirement %s`,
+
+			// python -m pip install --upgrade pip &&
+			// python -m pip install -v --requirement %s --report /installreport.json`,
+
 			venvPath, remoteProjectPath, config.GetPath([]string{"runtime", "requirements_path"}).(string)),
 	})
 
@@ -433,7 +447,8 @@ func startProject(networkVolumeId string) error {
 		fi
 
 		function tar_venv {
-			if ! [ $(cat /installreport.json | grep "install" | grep -c "\[\]") -eq 1 ]
+			# if ! [ $(cat /installreport.json | grep "install" | grep -c "\[\]") -eq 1 ]
+			if [ true ]
 			then
 				tar -c -C $PYTHON_VENV_PATH . | zstd -T0 > /venv.tar.zst;
 				mv /venv.tar.zst $VENV_ARCHIVE_PATH ;
@@ -488,7 +503,8 @@ func startProject(networkVolumeId string) error {
 				# Install new requirements if requirements.txt was changed
 				if [[ $changed_file == *"requirements"* ]]; then
 					echo "Installing new requirements..."
-					python -m pip install --upgrade pip && python -m pip install -r $REQUIRED_FILES --report /installreport.json
+					# python -m pip install --upgrade pip && python -m pip install -v -r $REQUIRED_FILES --report /installreport.json
+					uv pip install -v -r $REQUIRED_FILES
 					tar_venv &
 				fi
 
