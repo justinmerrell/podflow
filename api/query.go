@@ -36,7 +36,8 @@ func Query(input Input) (res *http.Response, err error) {
 
 	// Check if the API key is present
 	if apiKey == "" {
-		fmt.Println("API key not found")
+		fmt.Println("No API key found, get one at https://www.runpod.io/console/user/settings")
+		fmt.Println("Then run 'runpod config api-key [your API key]'")
 		return nil, errors.New("API key not found")
 	}
 

@@ -160,11 +160,23 @@ type NetVolOption struct {
 	Value string // The actual value to use
 }
 
+var ForkProjectCmd = &cobra.Command{
+	Use:   "fork",
+	Args:  cobra.ExactArgs(0),
+	Short: "Fork a worker from RunPod Hub",
+	Long:  "Fork a RunPod project from GitHub.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print("Enter the GitHub URL of the project you would like to fork:\n")
+		githubURL := prompt("")
+		forkProject(githubURL)
+	},
+}
+
 var NewProjectCmd = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"new"},
 	Args:    cobra.ExactArgs(0),
-	Short:   "Creates a new project",
+	Short:   "Creates a new serverless worker project",
 	Long:    "Creates a new RunPod project folder on your local machine.",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print("Welcome to the RunPod Project Creator!\n--------------------------------------\n\n")
@@ -190,7 +202,7 @@ var NewProjectCmd = &cobra.Command{
 		fmt.Println("")
 
 		// Model Name
-		if modelType != "Hello_World" {
+		if modelType != "Hello_World_(Boilerplate)" {
 			fmt.Print("   Enter the name of the Hugging Face model you would like to use:\n")
 			fmt.Print("   Leave blank to use the default model for the selected project.\n   > ")
 			fmt.Scanln(&modelName)
@@ -247,7 +259,7 @@ var StartProjectCmd = &cobra.Command{
 	Use:     "dev",
 	Aliases: []string{"start"},
 	Args:    cobra.ExactArgs(0),
-	Short:   "Start a development session for the current project",
+	Short:   "Start a development session",
 	Long:    "This command establishes a connection between your local development environment and your RunPod project environment, allowing for real-time synchronization of changes.",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Check for the existence of 'runpod.toml' in the current directory
@@ -305,6 +317,17 @@ var DeployProjectCmd = &cobra.Command{
 		fmt.Printf("    - https://api.runpod.ai/v2/%s/runsync\n", endpointId)
 		fmt.Printf("    - https://api.runpod.ai/v2/%s/run\n", endpointId)
 		fmt.Printf("    - https://api.runpod.ai/v2/%s/health\n", endpointId)
+	},
+}
+
+var PublishProjectCmd = &cobra.Command{
+	Use:   "publish",
+	Args:  cobra.ExactArgs(0),
+	Short: "publishes your project to the RunPod Hub",
+	Long:  "publishes the RunPod project in the current folder to the RunPod Hub",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Publishing project...")
+		//publishProject()
 	},
 }
 

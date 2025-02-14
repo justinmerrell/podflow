@@ -5,8 +5,6 @@ import (
 	"os"
 
 	"cli/api"
-	"cli/cmd/config"
-	"cli/cmd/croc"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,12 +12,12 @@ import (
 
 var version string
 
+
 // Entrypoint for the CLI
 var rootCmd = &cobra.Command{
-	Use:     "runpodctl",
-	Aliases: []string{"runpod"},
-	Short:   "CLI for runpod.io",
-	Long:    "The RunPod CLI tool to manage resources on runpod.io and develop serverless applications.",
+	Use:     "podflow",
+	Short:   "Endpoint development tool for runpod.io",
+	Long:    "The opinionated RunPod tool to develop serverless applications on runpod.io.",
 }
 
 func GetRootCmd() *cobra.Command {
@@ -27,35 +25,26 @@ func GetRootCmd() *cobra.Command {
 }
 
 func init() {
+	cobra.EnableCommandSorting = false
 	cobra.OnInitialize(initConfig)
 	registerCommands()
 }
 
 func registerCommands() {
-	rootCmd.AddCommand(config.ConfigCmd)
-	// RootCmd.AddCommand(connectCmd)
-	// RootCmd.AddCommand(copyCmd)
-	rootCmd.AddCommand(createCmd)
-	rootCmd.AddCommand(getCmd)
-	rootCmd.AddCommand(removeCmd)
-	rootCmd.AddCommand(startCmd)
-	rootCmd.AddCommand(stopCmd)
+	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(projectCmd)
 	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(sshCmd)
-
-	// Remote File Execution
-	rootCmd.AddCommand(execCmd)
-
-	// file transfer via croc
-	rootCmd.AddCommand(croc.ReceiveCmd)
-	rootCmd.AddCommand(croc.SendCmd)
+	//rootCmd.AddCommand(sshCmd)
 
 	// Version
 	rootCmd.Version = version
-	rootCmd.Flags().BoolP("version", "v", false, "Print the version of runpodctl")
-	rootCmd.SetVersionTemplate(`{{printf "runpodctl %s\n" .Version}}`)
+	rootCmd.Flags().BoolP("version", "v", false, "Print the version of podflow")
+	rootCmd.SetVersionTemplate(`{{printf "podflow %s\n" .Version}}`)
+
+	// API Access
+	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "RunPod API key")
+	rootCmd.PersistentFlags().StringVar(&apiUrl, "api-url", "https://api.runpod.io/graphql", "RunPod API URL")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -64,6 +53,9 @@ func Execute(ver string) {
 	version = ver
 	api.Version = ver
 	rootCmd.Version = ver
+	rootCmd.CompletionOptions.HiddenDefaultCmd = true
+
+	rootCmd.SetHelpCommand(&cobra.Command{Use: "no-help", Hidden: true})
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -76,32 +68,29 @@ func initConfig() {
 	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
 	configPath := home + "/.runpod"
+
 	viper.AddConfigPath(configPath)
 	viper.SetConfigType("toml")
 	viper.SetConfigName("config.toml")
-	config.ConfigFile = configPath + "/config.toml"
+
+	viper.SetDefault("apiKey", "")
+	viper.SetDefault("apiUrl", "https://api.runpod.io/graphql")
+
+	ConfigFile = configPath + "/config.toml"
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
+	// If a config file is found, read it in, otherwise create it.
 	if err := viper.ReadInConfig(); err == nil {
 		// fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	} else {
-		//legacy: try to migrate old config to new location
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".runpod.yaml")
-		if yamlReadErr := viper.ReadInConfig(); yamlReadErr == nil {
-			fmt.Println("Runpod config location has moved from ~/.runpod.yaml to ~/.runpod/config.toml")
-			fmt.Println("migrating your existing config to ~/.runpod/config.toml")
-		} else {
-			fmt.Println("Runpod config file not found, please run `runpodctl config` to create it")
-		}
-		viper.SetConfigType("toml")
-		//make .runpod folder if not exists
 		err := os.MkdirAll(configPath, os.ModePerm)
 		cobra.CheckErr(err)
-		err = viper.WriteConfigAs(config.ConfigFile)
+		err = viper.WriteConfigAs(ConfigFile)
 		cobra.CheckErr(err)
 	}
+
+	// Override API access if flags are set
+	viper.BindPFlag("apiKey", rootCmd.PersistentFlags().Lookup("api-key"))
+	viper.BindPFlag("apiUrl", rootCmd.PersistentFlags().Lookup("api-url"))
 }

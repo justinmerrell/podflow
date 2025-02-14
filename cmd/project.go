@@ -13,8 +13,10 @@ var projectCmd = &cobra.Command{
 }
 
 func init() {
+	projectCmd.AddCommand(project.ForkProjectCmd)
 	projectCmd.AddCommand(project.NewProjectCmd)
 	projectCmd.AddCommand(project.StartProjectCmd)
 	projectCmd.AddCommand(project.DeployProjectCmd)
-	projectCmd.AddCommand(project.BuildProjectCmd)
+	projectCmd.AddCommand(project.PublishProjectCmd)
+	//projectCmd.AddCommand(project.BuildProjectCmd)
 }
