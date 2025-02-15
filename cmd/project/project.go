@@ -165,6 +165,7 @@ var ForkProjectCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	Short: "Fork a worker from RunPod Hub",
 	Long:  "Fork a RunPod project from GitHub.",
+	GroupID: "hub",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print("Enter the GitHub URL of the project you would like to fork:\n")
 		githubURL := prompt("")
@@ -178,6 +179,7 @@ var NewProjectCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(0),
 	Short:   "Creates a new serverless worker project",
 	Long:    "Creates a new RunPod project folder on your local machine.",
+	GroupID: "project",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print("Welcome to the RunPod Project Creator!\n--------------------------------------\n\n")
 
@@ -261,6 +263,7 @@ var StartProjectCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(0),
 	Short:   "Start a development session",
 	Long:    "This command establishes a connection between your local development environment and your RunPod project environment, allowing for real-time synchronization of changes.",
+	GroupID: "project",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Check for the existence of 'runpod.toml' in the current directory
 		if _, err := os.Stat("runpod.toml"); os.IsNotExist(err) {
@@ -297,8 +300,9 @@ var StartProjectCmd = &cobra.Command{
 var DeployProjectCmd = &cobra.Command{
 	Use:   "deploy",
 	Args:  cobra.ExactArgs(0),
-	Short: "deploys your project as an endpoint",
-	Long:  "deploys a serverless endpoint for the RunPod project in the current folder",
+	Short: "Deploys your project as an endpoint",
+	Long:  "Deploys a serverless endpoint for the RunPod project in the current folder",
+	GroupID: "project",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Deploying project...")
 		networkVolumeId, err := selectNetworkVolume()
@@ -323,8 +327,9 @@ var DeployProjectCmd = &cobra.Command{
 var PublishProjectCmd = &cobra.Command{
 	Use:   "publish",
 	Args:  cobra.ExactArgs(0),
-	Short: "publishes your project to the RunPod Hub",
-	Long:  "publishes the RunPod project in the current folder to the RunPod Hub",
+	Short: "Publishes your project to RunPod Hub",
+	Long:  "Publishes the RunPod project in the current folder to the RunPod Hub",
+	GroupID: "hub",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Publishing project...")
 		//publishProject()

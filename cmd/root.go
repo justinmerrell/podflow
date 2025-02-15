@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"cli/api"
+	"cli/cmd/project"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,13 +13,32 @@ import (
 
 var version string
 
-
 // Entrypoint for the CLI
 var rootCmd = &cobra.Command{
-	Use:     "podflow",
-	Short:   "Endpoint development tool for runpod.io",
-	Long:    "The opinionated RunPod tool to develop serverless applications on runpod.io.",
+	Use: 	"podflow",
+	Long: 	`PodFlow is a development workflow for building and deploying serverless applications on runpod.io
+
+Quick Start:
+  1. Create a new worker project:
+       podflow create
+  2. Start a development session:
+       podflow dev
+  3. Deploy your worker as a serverless endpoint:
+       podflow deploy
+`,
 }
+
+//  Command groups
+var (
+	projectGroup = &cobra.Group{
+		ID:    "project",
+		Title: "Project Lifecycle Commands:",
+	}
+	hubGroup = &cobra.Group{
+		ID:    "hub",
+		Title: "Hub Operations:",
+	}
+)
 
 func GetRootCmd() *cobra.Command {
 	return rootCmd
@@ -31,9 +51,19 @@ func init() {
 }
 
 func registerCommands() {
+	rootCmd.AddGroup(projectGroup)
+	rootCmd.AddGroup(hubGroup)
+
+	// PodFlow
+	rootCmd.AddCommand(project.ForkProjectCmd)
+	rootCmd.AddCommand(project.NewProjectCmd)
+	rootCmd.AddCommand(project.StartProjectCmd)
+	rootCmd.AddCommand(project.DeployProjectCmd)
+	rootCmd.AddCommand(project.PublishProjectCmd)
+
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(projectCmd)
+	//rootCmd.AddCommand(projectCmd)
 	rootCmd.AddCommand(updateCmd)
 	//rootCmd.AddCommand(sshCmd)
 
@@ -45,6 +75,9 @@ func registerCommands() {
 	// API Access
 	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "RunPod API key")
 	rootCmd.PersistentFlags().StringVar(&apiUrl, "api-url", "https://api.runpod.io/graphql", "RunPod API URL")
+
+	rootCmd.PersistentFlags().Lookup("api-key").Hidden = true
+	rootCmd.PersistentFlags().Lookup("api-url").Hidden = true
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
