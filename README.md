@@ -17,7 +17,6 @@ _Note: All pods automatically come with runpodctl installed with a pod-scoped AP
       - [Linux/MacOS (WSL)](#linuxmacos-wsl)
       - [MacOS](#macos)
       - [Windows PowerShell](#windows-powershell)
-  - [Development Notes](#development-notes)
 
 ## Get Started
 
@@ -43,9 +42,7 @@ brew install runpodctl
 #### Windows PowerShell
 
 ```powershell
-wget https://github.com/runpod/runpodctl/releases/download/v1.9.0/runpodctl-windows-amd64.exe -O runpodctl.exe
+wget https://github.com/justinmerrell/podflow/releases/download/0.0.1/podflow-windows-amd64.exe -O podflow.exe
 ```
 
 For a comprehensive list of commands, visit [RunPod CLI documentation](doc/runpod.md).
-
-## Development Notes
