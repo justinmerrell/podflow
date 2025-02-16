@@ -3,6 +3,7 @@ package project
 import (
 	"bufio"
 	"cli/api"
+	"cli/cmd/nav"
 	"errors"
 	"fmt"
 	"os"
@@ -24,11 +25,15 @@ var (
 	showPrefixInPodLogs     bool
 )
 
-const inputPromptPrefix string = "   > "
+// Define a struct that holds the display string and the corresponding value
+type NetVolOption struct {
+	Name  string // The string to display
+	Value string // The actual value to use
+}
 
 func prompt(message string) string {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(inputPromptPrefix + message)
+	fmt.Print(nav.InputPromptPrefix + message)
 
 	selection, err := reader.ReadString('\n')
 	if err != nil {
@@ -92,7 +97,7 @@ func selectNetworkVolume() (networkVolumeId string, err error) {
 	}
 
 	promptTemplates := &promptui.SelectTemplates{
-		Label:    inputPromptPrefix + "{{ . }}",
+		Label:    nav.InputPromptPrefix + "{{ . }}",
 		Active:   ` {{ "●" | cyan }} {{ .Name | cyan }}`,
 		Inactive: `   {{ .Name | white }}`,
 		Selected: `   {{ .Name | white }}`,
@@ -128,7 +133,7 @@ func selectStarterTemplate() (template string, err error) {
 		return "", err
 	}
 	promptTemplates := &promptui.SelectTemplates{
-		Label:    inputPromptPrefix + "{{ . }}",
+		Label:    nav.InputPromptPrefix + "{{ . }}",
 		Active:   ` {{ "●" | cyan }} {{ .Name | cyan }}`,
 		Inactive: `   {{ .Name | white }}`,
 		Selected: `   {{ .Name | white }}`,
@@ -154,11 +159,7 @@ func selectStarterTemplate() (template string, err error) {
 	return template, nil
 }
 
-// Define a struct that holds the display string and the corresponding value
-type NetVolOption struct {
-	Name  string // The string to display
-	Value string // The actual value to use
-}
+
 
 var ForkProjectCmd = &cobra.Command{
 	Use:   "fork",
@@ -167,9 +168,20 @@ var ForkProjectCmd = &cobra.Command{
 	Long:  "Fork a RunPod project from GitHub.",
 	GroupID: "hub",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Print("Enter the GitHub URL of the project you would like to fork:\n")
-		githubURL := prompt("")
-		forkProject(githubURL)
+		// Select a project to fork or provide a GitHub URL
+		selectedRepo, err := nav.SelectPrompt("Select a project to fork:", repositories)
+		if err != nil {
+			fmt.Println("An error occurred while selecting a project to fork.")
+			return
+		}
+
+		if selectedRepo == "custom" {
+			fmt.Print("\n")
+			fmt.Print("Enter the GitHub URL of the project you would like to fork:\n")
+			githubURL := prompt("")
+			forkProject(githubURL)
+		}
+		forkProject(selectedRepo)
 	},
 }
 
@@ -181,7 +193,7 @@ var NewProjectCmd = &cobra.Command{
 	Long:    "Creates a new RunPod project folder on your local machine.",
 	GroupID: "project",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Print("Welcome to the RunPod Project Creator!\n--------------------------------------\n\n")
+		fmt.Print("Welcome to the RunPod Worker Creator!\n--------------------------------------\n\n")
 
 		// Project Name
 		if projectName == "" {
@@ -304,6 +316,13 @@ var DeployProjectCmd = &cobra.Command{
 	Long:  "Deploys a serverless endpoint for the RunPod project in the current folder",
 	GroupID: "project",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Check for the existence of 'runpod.toml' in the current directory
+		if _, err := os.Stat("runpod.toml"); os.IsNotExist(err) {
+			fmt.Println("No 'runpod.toml' found in the current directory.")
+			fmt.Println("Please navigate to your project directory and try again.")
+			return
+		}
+
 		fmt.Println("Deploying project...")
 		networkVolumeId, err := selectNetworkVolume()
 		if err != nil {
