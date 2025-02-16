@@ -81,15 +81,15 @@ check_system_requirements() {
     fi
 }
 
-# ----------------------------- runpodctl Version ---------------------------- #
+# ----------------------------- podflow Version ---------------------------- #
 fetch_latest_version() {
-    local version_url="https://api.github.com/repos/runpod/runpodctl/releases/latest"
+    local version_url="https://api.github.com/repos/runpod/podflow/releases/latest"
     VERSION=$(wget -q -O- "$version_url" | jq -r '.tag_name')
     if [ -z "$VERSION" ]; then
-        echo "Failed to fetch the latest version of runpodctl."
+        echo "Failed to fetch the latest version of podflow."
         exit 1
     fi
-    echo "Latest version of runpodctl: $VERSION"
+    echo "Latest version of podflow: $VERSION"
 }
 
 # ------------------------------- Download URL ------------------------------- #
@@ -113,12 +113,12 @@ download_url_constructor() {
         exit 1
     fi
 
-    DOWNLOAD_URL="https://github.com/runpod/runpodctl/releases/download/${VERSION}/runpodctl-${os_type}-${arch_type}"
+    DOWNLOAD_URL="https://github.com/runpod/podflow/releases/download/${VERSION}/podflow-${os_type}-${arch_type}"
 }
 
 # ---------------------------- Download & Install ---------------------------- #
 download_and_install_cli() {
-    local cli_file_name="runpodctl"
+    local cli_file_name="podflow"
     if ! wget -q --show-progress "$DOWNLOAD_URL" -O "$cli_file_name"; then
         echo "Failed to download $cli_file_name."
         exit 1
@@ -128,14 +128,14 @@ download_and_install_cli() {
         echo "Failed to move $cli_file_name to /usr/local/bin/."
         exit 1
     fi
-    echo "runpodctl installed successfully."
+    echo "podflow installed successfully."
 }
 
 
 # ---------------------------------------------------------------------------- #
 #                                     Main                                     #
 # ---------------------------------------------------------------------------- #
-echo "Installing runpodctl..."
+echo "Installing podflow..."
 
 check_root
 check_system_requirements
