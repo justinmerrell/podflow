@@ -78,12 +78,15 @@ max_workers = 3
 flashboot = true
 
 [runtime]
+# package_manager  - Package manager to use for the project.
+#
 # python_version    - Python version to use for the project.
 #
 # handler_path      - Path to the handler file for the project. Adapt example scripts from Hugging Face in this file.
 #
 # requirements_path - Path to the requirements file for the project. Add dependencies from Hugging Face in this file.
 
+package_manager = "pip"	# Supported package managers: 'pip', 'uv'
 python_version = "%s"
 handler_path = "src/handler.py"
 requirements_path = "builder/requirements.txt"
