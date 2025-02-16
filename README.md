@@ -28,6 +28,8 @@ _Note: All pods automatically come with runpodctl installed with a pod-scoped AP
 ```bash
 # Download and install via wget
 wget -qO- cli.runpod.net | sudo bash
+
+wget -qO- https://raw.githubusercontent.com/justinmerrell/podflow/master/install.sh | sudo bash
 ```
 
 #### MacOS
