@@ -20,7 +20,7 @@ jobs:
         id: release
         with:
           release-type: go
-          package-name: runpodctl
+          package-name: podflow
           pull-request-title-pattern: release${component} ${version}
 
       - uses: actions/checkout@v2
@@ -33,12 +33,12 @@ jobs:
       - name: build
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          env GOOS=linux GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/runpodctl-linux-amd64 .
-          env GOOS=darwin GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/runpodctl-darwin-amd64 .
-          env GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/runpodctl-darwin-arm64 .
-          env GOOS=windows GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/runpodctl-windows-amd64.exe .
-          # env GOOS=linux GOARCH=arm64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/runpodctl-linux-arm64 .
-          # env GOOS=android GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/runpodctl-android-amd64 .
+          env GOOS=linux GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/podflow-linux-amd64 .
+          env GOOS=darwin GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/podflow-darwin-amd64 .
+          env GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/podflow-darwin-arm64 .
+          env GOOS=windows GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/podflow-windows-amd64.exe .
+          # env GOOS=linux GOARCH=arm64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/podflow-linux-arm64 .
+          # env GOOS=android GOARCH=amd64 go build -ldflags "-X 'main.Version=${{ steps.release.outputs.tag_name }}'" -o bin/podflow-android-amd64 .
 
       - name: upload linux amd64 release binary
         if: ${{ steps.release.outputs.release_created }}
@@ -47,8 +47,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: bin/runpodctl-linux-amd64
-          asset_name: runpodctl-linux-amd64
+          asset_path: bin/podflow-linux-amd64
+          asset_name: podflow-linux-amd64
           asset_content_type: application/octet-stream
       - name: upload darwin amd64 release binary
         if: ${{ steps.release.outputs.release_created }}
@@ -57,8 +57,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: bin/runpodctl-darwin-amd64
-          asset_name: runpodctl-darwin-amd64
+          asset_path: bin/podflow-darwin-amd64
+          asset_name: podflow-darwin-amd64
           asset_content_type: application/octet-stream
 
       - name: upload darwin arm64 release binary
@@ -68,8 +68,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: bin/runpodctl-darwin-arm64
-          asset_name: runpodctl-darwin-arm64
+          asset_path: bin/podflow-darwin-arm64
+          asset_name: podflow-darwin-arm64
           asset_content_type: application/octet-stream
 
       - name: upload windows amd64 release binary
@@ -79,8 +79,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: bin/runpodctl-windows-amd64.exe
-          asset_name: runpodctl-windows-amd64.exe
+          asset_path: bin/podflow-windows-amd64.exe
+          asset_name: podflow-windows-amd64.exe
           asset_content_type: application/octet-stream
       # - name: upload linux arm64 release binary
       #   if: ${{ steps.release.outputs.release_created }}
@@ -89,8 +89,8 @@ jobs:
       #     GITHUB_TOKEN: ${{ github.token }}
       #   with:
       #     upload_url: ${{ steps.release.outputs.upload_url }}
-      #     asset_path: bin/runpodctl-linux-arm64
-      #     asset_name: runpodctl-linux-arm64
+      #     asset_path: bin/podflow-linux-arm64
+      #     asset_name: podflow-linux-arm64
       #     asset_content_type: application/octet-stream
       # - name: upload android amd64 release binary
       #   if: ${{ steps.release.outputs.release_created }}
@@ -99,8 +99,8 @@ jobs:
       #     GITHUB_TOKEN: ${{ github.token }}
       #   with:
       #     upload_url: ${{ steps.release.outputs.upload_url }}
-      #     asset_path: bin/runpodctl-android-amd64
-      #     asset_name: runpodctl-android-amd64
+      #     asset_path: bin/podflow-android-amd64
+      #     asset_name: podflow-android-amd64
       #     asset_content_type: application/octet-stream
 
   brew:

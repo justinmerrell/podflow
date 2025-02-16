@@ -83,7 +83,7 @@ check_system_requirements() {
 
 # ----------------------------- podflow Version ---------------------------- #
 fetch_latest_version() {
-    local version_url="https://api.github.com/repos/runpod/podflow/releases/latest"
+    local version_url="https://api.github.com/repos/justinmerrell/podflow/releases/latest"
     VERSION=$(wget -q -O- "$version_url" | jq -r '.tag_name')
     if [ -z "$VERSION" ]; then
         echo "Failed to fetch the latest version of podflow."
@@ -113,7 +113,7 @@ download_url_constructor() {
         exit 1
     fi
 
-    DOWNLOAD_URL="https://github.com/runpod/podflow/releases/download/${VERSION}/podflow-${os_type}-${arch_type}"
+    DOWNLOAD_URL="https://github.com/justinmerrell/podflow/releases/download/${VERSION}/podflow-${os_type}-${arch_type}"
 }
 
 # ---------------------------- Download & Install ---------------------------- #
